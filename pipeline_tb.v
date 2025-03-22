@@ -18,10 +18,10 @@ module tb();
     initial begin
         
         $display("Running simulation...");
-        $timeformat(-9, 2, " ns", 10); // Set time format
+        $timeformat(-9, 2, " ns", 10); 
     end
 
-    // Instantiate the DUT (Design Under Test)
+    // Instantiate the DUT 
     Pipeline_top dut (
         .clk(clk),
         .rst(rst)
