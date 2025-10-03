@@ -11,7 +11,6 @@ module ALU(
     assign B_mux = (ALUControl == 3'b001) ? ~B + 1 : B;  // For SUB
     assign {Cout, Sum} = A + B_mux;
 
-    // Overflow detection
     assign Overflow_add = (A[31] == B_mux[31]) && (Sum[31] != A[31]);
     assign Overflow_sub = (A[31] != B[31]) && (Sum[31] != A[31]);
 
@@ -27,7 +26,6 @@ module ALU(
             default: Result = 32'b0;
         endcase
 
-        // Flags
         Zero     = (Result == 32'b0);
         Negative = Result[31];
         Carry    = (ALUControl <= 3'b001) ? Cout : 1'b0;
@@ -35,3 +33,4 @@ module ALU(
                    (ALUControl == 3'b001) ? Overflow_sub : 1'b0;
     end
 endmodule
+
