@@ -9,7 +9,6 @@ module Control_Unit_Top(
 
     wire [1:0] ALUOp;
 
-    // Main Decoder Instance
     Main_Decoder main_decoder_inst (
         .Op(Op),
         .RegWrite(RegWrite),
@@ -21,12 +20,12 @@ module Control_Unit_Top(
         .ALUOp(ALUOp)
     );
 
-    // ALU Decoder Instance
     ALU_Decoder alu_decoder_inst (
         .ALUOp(ALUOp),
         .funct3(funct3),
-        .funct7(funct7[5]),  // Only Bit-5 is needed for ADD/SUB
+        .funct7(funct7[5]),  
         .ALUControl(ALUControl)
     );
 
 endmodule
+
