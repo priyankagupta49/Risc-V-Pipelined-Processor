@@ -7,10 +7,8 @@ module Instruction_Memory(
 
     reg [31:0] mem [1023:0]; // 1 KB instruction memory
 
-    // Read operation: If reset is low, return 0; otherwise, fetch instruction
     assign RD = (rst == 1'b0) ? 32'b0 : mem[A[31:2]];
 
-    // Proper initialization of instructions
     initial begin
         mem[0] = 32'hFFC4A303; 
         mem[1] = 32'h00832383; 
@@ -21,3 +19,4 @@ module Instruction_Memory(
     end
 
 endmodule
+
