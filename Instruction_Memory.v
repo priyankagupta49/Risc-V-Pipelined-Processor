@@ -5,7 +5,7 @@ module Instruction_Memory(
     output [31:0] RD
 );
 
-    reg [31:0] mem [1023:0]; // 1 KB instruction memory
+    reg [31:0] mem [1023:0]; 
 
     assign RD = (rst == 1'b0) ? 32'b0 : mem[A[31:2]];
 
@@ -19,4 +19,5 @@ module Instruction_Memory(
     end
 
 endmodule
+
 
