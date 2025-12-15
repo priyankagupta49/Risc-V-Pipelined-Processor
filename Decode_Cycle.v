@@ -1,14 +1,17 @@
 module decode_cycle(
     input clk, rst,
+    
+    // Data inputs from IF stage and WB stage
     input [31:0] InstrD, PCD, PCPlus4D, ResultW,
     input RegWriteW,
     input [4:0] RDW,
 
-    output RegWriteE, ALUSrcE, MemWriteE, ResultSrcE, BranchE,
-    output [2:0] ALUControlE,
-    output [31:0] RD1_E, RD2_E, Imm_Ext_E,
-    output [4:0] RS1_E, RS2_E, RD_E,
-    output [31:0] PCE, PCPlus4E
+    // Outputs to EX stage (ID/EX Register Outputs)
+    output reg RegWriteE, ALUSrcE, MemWriteE, ResultSrcE, BranchE,
+    output reg [2:0] ALUControlE,
+    output reg [31:0] RD1_E, RD2_E, Imm_Ext_E,
+    output reg [4:0] RS1_E, RS2_E, RD_E,
+    output reg [31:0] PCE, PCPlus4E
 );
 
     // Internal wires for control signals
@@ -16,13 +19,6 @@ module decode_cycle(
     wire [1:0] ImmSrcD;
     wire [2:0] ALUControlD;
     wire [31:0] RD1_D, RD2_D, Imm_Ext_D;
-
-    // Register storage for pipeline stage
-    reg RegWriteD_r, ALUSrcD_r, MemWriteD_r, ResultSrcD_r, BranchD_r;
-    reg [2:0] ALUControlD_r;
-    reg [31:0] RD1_D_r, RD2_D_r, Imm_Ext_D_r;
-    reg [4:0] RD_D_r, RS1_D_r, RS2_D_r;
-    reg [31:0] PCD_r, PCPlus4D_r;
 
     // Control Unit
     Control_Unit_Top control (
@@ -38,14 +34,14 @@ module decode_cycle(
         .ALUControl(ALUControlD)
     );
 
-    // Register File (Avoid combinational write dependency)
+    // Register File (Write back happens on posedge clk in WB stage)
     Register_File rf (
         .clk(clk),
         .rst(rst),
         .WE3(RegWriteW),
         .WD3(ResultW),
-        .A1(InstrD[19:15]),
-        .A2(InstrD[24:20]),
+        .A1(InstrD[19:15]), // RS1
+        .A2(InstrD[24:20]), // RS2
         .A3(RDW),
         .RD1(RD1_D),
         .RD2(RD2_D)
@@ -58,55 +54,40 @@ module decode_cycle(
         .ImmSrc(ImmSrcD)
     );
 
-    // Pipeline Registers (Synchronous Reset for Vivado)
+    // ID/EX Pipeline Registers 
     always @(posedge clk) begin
-        if (!rst) begin
-            RegWriteD_r  <= 1'b0;
-            ALUSrcD_r    <= 1'b0;
-            MemWriteD_r  <= 1'b0;
-            ResultSrcD_r <= 1'b0;
-            BranchD_r    <= 1'b0;
-            ALUControlD_r <= 3'b000;
-            RD1_D_r      <= 32'h00000000;
-            RD2_D_r      <= 32'h00000000;
-            Imm_Ext_D_r  <= 32'h00000000;
-            RD_D_r       <= 5'h00;
-            PCD_r        <= 32'h00000000;
-            PCPlus4D_r   <= 32'h00000000;
-            RS1_D_r      <= 5'h00;
-            RS2_D_r      <= 5'h00;
+        if (rst == 1'b0) begin 
+            RegWriteE     <= 1'b0;
+            ALUSrcE       <= 1'b0;
+            MemWriteE     <= 1'b0;
+            ResultSrcE    <= 1'b0;
+            BranchE       <= 1'b0;
+            ALUControlE   <= 3'b000;
+            RD1_E         <= 32'h00000000;
+            RD2_E         <= 32'h00000000;
+            Imm_Ext_E     <= 32'h00000000;
+            RD_E          <= 5'h00;
+            PCE           <= 32'h00000000;
+            PCPlus4E      <= 32'h00000000;
+            RS1_E         <= 5'h00;
+            RS2_E         <= 5'h00;
         end else begin
-            RegWriteD_r  <= RegWriteD;
-            ALUSrcD_r    <= ALUSrcD;
-            MemWriteD_r  <= MemWriteD;
-            ResultSrcD_r <= ResultSrcD;
-            BranchD_r    <= BranchD;
-            ALUControlD_r <= ALUControlD;
-            RD1_D_r      <= RD1_D;
-            RD2_D_r      <= RD2_D;
-            Imm_Ext_D_r  <= Imm_Ext_D;
-            RD_D_r       <= InstrD[11:7];  // Destination Register
-            PCD_r        <= PCD;
-            PCPlus4D_r   <= PCPlus4D;
-            RS1_D_r      <= InstrD[19:15]; // Source Register 1
-            RS2_D_r      <= InstrD[24:20]; // Source Register 2
+            
+            RegWriteE     <= RegWriteD;
+            ALUSrcE       <= ALUSrcD;
+            MemWriteE     <= MemWriteD;
+            ResultSrcE    <= ResultSrcD;
+            BranchE       <= BranchD;
+            ALUControlE   <= ALUControlD;
+            RD1_E         <= RD1_D;
+            RD2_E         <= RD2_D;
+            Imm_Ext_E     <= Imm_Ext_D;
+            RD_E          <= InstrD[11:7];  // Destination Register (RD)
+            PCE           <= PCD;
+            PCPlus4E      <= PCPlus4D;
+            RS1_E         <= InstrD[19:15]; // Source Register 1 (RS1)
+            RS2_E         <= InstrD[24:20]; // Source Register 2 (RS2)
         end
     end
-
-    // Output Assignments
-    assign RegWriteE  = RegWriteD_r;
-    assign ALUSrcE    = ALUSrcD_r;
-    assign MemWriteE  = MemWriteD_r;
-    assign ResultSrcE = ResultSrcD_r;
-    assign BranchE    = BranchD_r;
-    assign ALUControlE = ALUControlD_r;
-    assign RD1_E      = RD1_D_r;
-    assign RD2_E      = RD2_D_r;
-    assign Imm_Ext_E  = Imm_Ext_D_r;
-    assign RD_E       = RD_D_r;
-    assign PCE        = PCD_r;
-    assign PCPlus4E   = PCPlus4D_r;
-    assign RS1_E      = RS1_D_r;
-    assign RS2_E      = RS2_D_r;
 
 endmodule

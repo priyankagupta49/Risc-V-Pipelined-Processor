@@ -1,4 +1,3 @@
-
 module Control_Unit_Top(
     input [6:0] Op, funct7,
     input [2:0] funct3,
@@ -20,12 +19,12 @@ module Control_Unit_Top(
         .ALUOp(ALUOp)
     );
 
+    
     ALU_Decoder alu_decoder_inst (
         .ALUOp(ALUOp),
         .funct3(funct3),
-        .funct7(funct7[5]),  
+        .funct7(funct7), 
         .ALUControl(ALUControl)
     );
 
 endmodule
-

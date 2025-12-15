@@ -6,11 +6,10 @@ module PC_Module(
 );
 
     always @(posedge clk) begin
-        if (rst == 1'b0)
+        if (rst == 1'b0) 
             PC <= 32'b0;  
         else
             PC <= PC_Next;
     end
 
 endmodule
-

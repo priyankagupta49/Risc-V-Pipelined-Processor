@@ -15,4 +15,3 @@ module hazard_unit(rst, RegWriteM, RegWriteW, RD_M, RD_W, Rs1_E, Rs2_E, ForwardA
 
 
 endmodule
-
