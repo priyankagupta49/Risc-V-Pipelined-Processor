@@ -13,3 +13,4 @@ Memory Access (MEM): Read/write data memory and handled load/store instructions.
 Write Back (WB): Wrote computed results back to registers for further processing.
 
 Implemented data hazard detection and forwarding to optimize performance.
+instructions from testbench add sub and or slt implemented
